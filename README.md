@@ -35,3 +35,10 @@ npx hardhat compile
 npx hardhat node
 npx hardhat run scripts/deploy.js --network localhost
 npm start
+
+
+## 🧪 CraftHat (Fake MetaMask for Localnet)
+
+- Use **Connect Wallet** and choose CraftHat to run fully on localhost without MetaMask overhead.
+- Copy Hardhat private keys/tokens from the in-app CraftHat popup and switch identities quickly (logout -> reconnect).
+- Works with the same deployed contracts and role logic used by Hardhat localnet (chainId 31337/1337).

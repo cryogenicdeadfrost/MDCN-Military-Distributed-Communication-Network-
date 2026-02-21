@@ -870,3 +870,67 @@ main {
 
 // =================================================
 // ==========  END OF STYLES  =======================
+
+.wallet-chip {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.crafthat-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.crafthat-modal {
+  width: min(900px, 95vw);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.crafthat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.crafthat-note {
+  margin-bottom: 12px;
+}
+
+.crafthat-account-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.crafthat-account-row {
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.crafthat-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.crafthat-meta {
+  color: #2e3b4e;
+  font-size: 0.85rem;
+}
