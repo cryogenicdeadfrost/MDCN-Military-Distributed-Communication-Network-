@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Inbox from '../components/Inbox';
 import { ethers } from 'ethers';
 
-const AdminDashboard = ({ contract, account, isAdmin, contractAddresses }) => {
+const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddresses }) => {
   // State variables
   const [selectedInbox, setSelectedInbox] = useState("1"); // Default: Main Command Centre
   const [commandResponses, setCommandResponses] = useState({});
@@ -30,6 +30,17 @@ const AdminDashboard = ({ contract, account, isAdmin, contractAddresses }) => {
   };
 
   // Role definitions matching the contract
+
+  const getRuntimeSigner = () => {
+    if (contracts && contracts.signer) return contracts.signer;
+    if (contract && contract.signer) return contract.signer;
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      return provider.getSigner();
+    }
+    return null;
+  };
+
   const ROLES = {
     NONE: 0,
     STRATEGIC: 1,  // Admin
@@ -150,9 +161,8 @@ const AdminDashboard = ({ contract, account, isAdmin, contractAddresses }) => {
   // Fetch intelligence (responses and general intel) via the coordination contract
   const fetchIntelligence = async () => {
     try {
-      if (!contractAddresses.coordination || !window.ethereum) return;
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
+      const signer = getRuntimeSigner();
+      if (!contractAddresses.coordination || !signer) return;
       const coordABI = [
         "event IntelligenceSynced(uint256 indexed id, address indexed sender, address indexed recipient, string data, uint256 timestamp)",
         "function intelStore(uint256) public view returns (uint256 id, address sender, address recipient, string intelData, uint256 timestamp, bool acknowledged, address acknowledgedBy, uint256 acknowledgedTimestamp)"
@@ -230,9 +240,8 @@ const AdminDashboard = ({ contract, account, isAdmin, contractAddresses }) => {
   // Fetch field data reports via the tactical contract
   const fetchFieldData = async () => {
     try {
-      if (!contractAddresses.tactical || !window.ethereum) return;
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
+      const signer = getRuntimeSigner();
+      if (!contractAddresses.tactical || !signer) return;
       const tacticalABI = [
         "event FieldDataLogged(uint256 indexed id, address indexed sender, address indexed recipient, string data, uint256 timestamp)",
         "function fieldData(uint256) public view returns (uint256 id, address sender, address recipient, string data, uint256 timestamp, bool acknowledged, address acknowledgedBy, uint256 acknowledgedTimestamp)"
@@ -307,9 +316,9 @@ const AdminDashboard = ({ contract, account, isAdmin, contractAddresses }) => {
         }
         
         // Coordination contract events
-        if (contractAddresses.coordination && window.ethereum) {
-          const provider = new ethers.providers.Web3Provider(window.ethereum);
-          const signer = provider.getSigner();
+        if (contractAddresses.coordination) {
+          const signer = getRuntimeSigner();
+          if (!signer) return;
           const coordABI = [
             "event IntelligenceSynced(uint256 indexed id, address indexed sender, address indexed recipient, string data, uint256 timestamp)",
             "event IntelligenceAcknowledged(uint256 indexed id, address indexed acknowledgedBy, uint256 timestamp)"
@@ -332,9 +341,9 @@ const AdminDashboard = ({ contract, account, isAdmin, contractAddresses }) => {
         }
         
         // Tactical contract events
-        if (contractAddresses.tactical && window.ethereum) {
-          const provider = new ethers.providers.Web3Provider(window.ethereum);
-          const signer = provider.getSigner();
+        if (contractAddresses.tactical) {
+          const signer = getRuntimeSigner();
+          if (!signer) return;
           const tacticalABI = [
             "event FieldDataLogged(uint256 indexed id, address indexed sender, address indexed recipient, string data, uint256 timestamp)",
             "event FieldDataAcknowledged(uint256 indexed id, address indexed ackBy, uint256 timestamp)"
@@ -361,9 +370,9 @@ const AdminDashboard = ({ contract, account, isAdmin, contractAddresses }) => {
           if (contract) {
             contract.removeAllListeners();
           }
-          if (contractAddresses.coordination && window.ethereum) {
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const signer = provider.getSigner();
+          if (contractAddresses.coordination) {
+            const signer = getRuntimeSigner();
+            if (!signer) return;
             const coordContract = new ethers.Contract(
               contractAddresses.coordination,
               ["event IntelligenceSynced", "event IntelligenceAcknowledged"],
@@ -371,9 +380,9 @@ const AdminDashboard = ({ contract, account, isAdmin, contractAddresses }) => {
             );
             coordContract.removeAllListeners();
           }
-          if (contractAddresses.tactical && window.ethereum) {
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const signer = provider.getSigner();
+          if (contractAddresses.tactical) {
+            const signer = getRuntimeSigner();
+            if (!signer) return;
             const tacticalContract = new ethers.Contract(
               contractAddresses.tactical,
               ["event FieldDataLogged", "event FieldDataAcknowledged"],
@@ -453,8 +462,8 @@ const AdminDashboard = ({ contract, account, isAdmin, contractAddresses }) => {
   // Acknowledge a field data message via the tactical contract
   const acknowledgeFieldData = async (id) => {
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
+      const signer = getRuntimeSigner();
+      if (!signer) throw new Error('No wallet signer available.');
       const tacticalContract = new ethers.Contract(
         contractAddresses.tactical,
         ["function acknowledgeFieldData(uint256 _id) public"],
@@ -473,8 +482,8 @@ const AdminDashboard = ({ contract, account, isAdmin, contractAddresses }) => {
   // Acknowledge an intelligence message via the coordination contract
   const acknowledgeIntelligence = async (id) => {
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
+      const signer = getRuntimeSigner();
+      if (!signer) throw new Error('No wallet signer available.');
       const coordContract = new ethers.Contract(
         contractAddresses.coordination,
         ["function acknowledgeIntelligence(uint256 _intelId) public"],
@@ -501,8 +510,8 @@ const AdminDashboard = ({ contract, account, isAdmin, contractAddresses }) => {
       const fullResponse = `RESPONSE TO ${respondingTo.type === 'field' ? 'FIELD DATA' : 'INTEL'} #${respondingTo.id}: ${metadataPrefix}${responseText}`;
       let respContract, methodName;
       if (respondingTo.type === 'intel') {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
+        const signer = getRuntimeSigner();
+        if (!signer) throw new Error('No wallet signer available.');
         respContract = new ethers.Contract(
           contractAddresses.coordination,
           ["function syncIntelligence(address _recipient, string memory _data) public"],
@@ -510,8 +519,8 @@ const AdminDashboard = ({ contract, account, isAdmin, contractAddresses }) => {
         );
         methodName = "syncIntelligence";
       } else { // field data
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
+        const signer = getRuntimeSigner();
+        if (!signer) throw new Error('No wallet signer available.');
         respContract = new ethers.Contract(
           contractAddresses.tactical,
           ["function logFieldData(address _recipient, string memory _data) public"],
