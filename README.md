@@ -53,7 +53,7 @@ Main React app files live under `src/`.
 
 - `src/App.js`
   - App routing
-  - Wallet connection flow (MetaMask and CraftHat local wallet mode)
+  - Wallet connection flow (MetaMask and SoftHat local wallet mode)
   - Contract initialization using selected signer
   - Role-based route and section rendering
 
@@ -61,7 +61,7 @@ Main React app files live under `src/`.
   - `Navbar.js` for global navigation and wallet connect/logout actions
   - `CommandSection.js`, `CoordinationSection.js`, `TacticalSection.js` for composing and sending messages
   - `Inbox.js` for command inbox and acknowledgements
-  - `CraftHatModal.js` for local key import / account switching helper
+  - `SoftHatModal.js` for local key import / account switching helper
 
 - `src/pages/`
   - `AdminLogin.js`, `AdminDashboard.js`
@@ -81,16 +81,16 @@ This app currently supports two ways to connect a signer:
 
 Use your browser extension wallet connected to local Hardhat network.
 
-### 2) CraftHat mode (local fake-wallet UX)
+### 2) SoftHat mode (local fake-wallet UX)
 
-CraftHat is a local helper flow intended for localhost development:
+SoftHat is a local helper flow intended for localhost development:
 
 - You can import a private key manually.
-- You can quickly pick accounts from `public/crafthat-accounts.json`.
+- You can quickly pick accounts from `public/softhat-accounts.json`.
 - You can copy fake token labels and private keys from the popup.
 - You can switch identities fast by logout then reconnect.
 
-CraftHat is intentionally local-only behavior. If you point it at production and it lets you do that, treat that as user error mixed with optimism.
+SoftHat is intentionally local-only behavior. If you point it at production and it lets you do that, treat that as user error mixed with optimism.
 
 ## Roles and expected behavior
 
@@ -138,7 +138,7 @@ npx hardhat run scripts/deploy.js --network localhost
 npm start
 ```
 
-At this point you can connect either with MetaMask or CraftHat.
+At this point you can connect either with MetaMask or SoftHat.
 
 ## Setup and run (scripted dev flow)
 
@@ -174,7 +174,7 @@ Common generated/static config files used in local workflow:
 - `config/network-config.json`
 - `network-config.json`
 - `config/metamask-import.txt`
-- `public/crafthat-accounts.json`
+- `public/softhat-accounts.json`
 
 These may include private keys for local testing. Keep that local. Do not use those keys for anything real unless your retirement plan includes avoidable regret.
 

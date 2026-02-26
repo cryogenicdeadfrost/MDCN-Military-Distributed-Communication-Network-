@@ -5,13 +5,13 @@
 // =================================================
 
 $font-stack: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-$primary-color: #4b9ee6;       
-$primary-hover: #3988cd;
+$primary-color: #6f5a4a;       
+$primary-hover: #5b4638;
 $strategic-color: #ff66c4;
 $operational-color: #4CAF50;
 $tactical-color: #ff9800;
-$secondary-color: #2e3b4e;
-$secondary-dark: #1f2a38;
+$secondary-color: #3f3a36;
+$secondary-dark: #2b2521;
 
 // Additional accent colors
 $light-red: #ffcdd2;
@@ -20,8 +20,8 @@ $light-yellow: #fff9c4;
 
 // Neutrals
 $text-color: #333;
-$bg-gradient-start: #f0f4f8;
-$bg-gradient-end: #d9e2ec;
+$bg-gradient-start: #efe9e2;
+$bg-gradient-end: #2a2421;
 $component-bg: #ffffff;
 $tactical-card-bg: #fffaf2; // Slightly off-white with a warm hue
 $inbox-card-bg: #eef5ff;    // Light bluish tint
@@ -47,7 +47,7 @@ $radius-card: 10px;
 }
 
 @mixin animated-gradient {
-  background: linear-gradient(135deg, $bg-gradient-start, $bg-gradient-end);
+  background: linear-gradient(135deg, #f5f3f1 0%, #ede8e3 6%, #e4ddd6 12%, #d8cec5 18%, #cabeb3 24%, #b9aa9d 30%, #a89384 36%, #977c6b 42%, #866655 48%, #765140 54%, #654233 60%, #57372b 66%, #4a3026 72%, #402a22 78%, #38251f 84%, #31211c 90%, #2a1d19 96%, #231815 100%);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
 }
@@ -879,7 +879,7 @@ main {
   font-size: 0.8rem;
 }
 
-.crafthat-overlay {
+.softhat-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.45);
@@ -889,7 +889,7 @@ main {
   align-items: center;
 }
 
-.crafthat-modal {
+.softhat-modal {
   width: min(900px, 95vw);
   max-height: 90vh;
   overflow: auto;
@@ -898,24 +898,24 @@ main {
   padding: 20px;
 }
 
-.crafthat-header {
+.softhat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
 }
 
-.crafthat-note {
+.softhat-note {
   margin-bottom: 12px;
 }
 
-.crafthat-account-list {
+.softhat-account-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.crafthat-account-row {
+.softhat-account-row {
   border: 1px solid #ced4da;
   border-radius: 8px;
   padding: 10px;
@@ -925,12 +925,22 @@ main {
   align-items: center;
 }
 
-.crafthat-actions {
+.softhat-actions {
   display: flex;
   gap: 6px;
 }
 
-.crafthat-meta {
+.softhat-meta {
   color: #2e3b4e;
   font-size: 0.85rem;
 }
+
+
+.shade-strip {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  gap: 2px;
+  margin: 12px 0;
+}
+
+.shade-strip span { height: 6px; }

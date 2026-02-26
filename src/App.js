@@ -13,7 +13,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import SubordinateLogin from './pages/SubordinateLogin';
 import SubordinateDashboard from './pages/SubordinateDashboard';
-import CraftHatModal from './components/CraftHatModal';
+import SoftHatModal from './components/SoftHatModal';
 import { ethers } from 'ethers';
 
 const commandContractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
@@ -78,9 +78,16 @@ function App() {
   const [isTactical, setIsTactical] = useState(false);
   const [isSubordinate, setIsSubordinate] = useState(false);
   const [walletMode, setWalletMode] = useState('');
-  const [craftHatOpen, setCraftHatOpen] = useState(false);
-  const [craftHatAccounts, setCraftHatAccounts] = useState([]);
+  const [softHatOpen, setSoftHatOpen] = useState(false);
+  const [softHatAccounts, setSoftHatAccounts] = useState([]);
   const [walletStatus, setWalletStatus] = useState('');
+
+
+  const buildRouteHint = (index) => {
+    if (index <= 2) return 'Strategic / Main Command Centre';
+    if (index <= 10) return 'Operational / Coordination';
+    return 'Tactical / Field Ops';
+  };
 
   const clearSession = () => {
     setAccount('');
@@ -101,6 +108,8 @@ function App() {
     setAccount(address);
     setWalletMode(modeLabel);
 
+    console.log('[MDCN][Wallet] Connected', { mode: modeLabel, account: address });
+
     const role = await commandContract.roles(address);
     const roleNumber = Number(role.toString());
     setUserRole(roleNumber);
@@ -112,7 +121,7 @@ function App() {
 
   const connectMetaMask = async () => {
     if (!window.ethereum) {
-      alert('MetaMask is not installed. You can use CraftHat for localnet.');
+      alert('MetaMask is not installed. You can use SoftHat for localnet.');
       return;
     }
     setLoading(true);
@@ -130,21 +139,21 @@ function App() {
     }
   };
 
-  const connectCraftHat = async (privateKey) => {
+  const connectSoftHat = async (privateKey) => {
     setLoading(true);
     try {
       const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
       const network = await provider.getNetwork();
       if (![31337, 1337].includes(Number(network.chainId))) {
-        throw new Error('CraftHat supports localhost networks only (31337/1337).');
+        throw new Error('SoftHat supports localhost networks only (31337/1337).');
       }
       const wallet = new ethers.Wallet(privateKey, provider);
-      await initializeContracts(wallet, wallet.address, 'crafthat');
-      setWalletStatus(`CraftHat connected: ${wallet.address}`);
-      setCraftHatOpen(false);
+      await initializeContracts(wallet, wallet.address, 'softhat');
+      setWalletStatus(`SoftHat connected: ${wallet.address}`);
+      setSoftHatOpen(false);
     } catch (error) {
-      alert(`CraftHat import failed: ${error.message}`);
-      setWalletStatus(`CraftHat error: ${error.message}`);
+      alert(`SoftHat import failed: ${error.message}`);
+      setWalletStatus(`SoftHat error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -152,13 +161,13 @@ function App() {
 
   const openWalletHub = () => {
     if (window.ethereum) {
-      const useMetaMask = window.confirm('Use MetaMask? Click Cancel for CraftHat local wallet.');
+      const useMetaMask = window.confirm('Use MetaMask? Click Cancel for SoftHat local wallet.');
       if (useMetaMask) {
         connectMetaMask();
         return;
       }
     }
-    setCraftHatOpen(true);
+    setSoftHatOpen(true);
   };
 
   const logoutUser = () => {
@@ -169,10 +178,16 @@ function App() {
   };
 
   useEffect(() => {
-    fetch('/crafthat-accounts.json')
+    fetch('/softhat-accounts.json')
       .then((response) => response.json())
-      .then((data) => setCraftHatAccounts(data.accounts || []))
-      .catch(() => setCraftHatAccounts([]));
+      .then((data) => {
+        const mapped = (data.accounts || []).map((account) => ({
+          ...account,
+          routeHint: buildRouteHint(Number(account.index || 0)),
+        }));
+        setSoftHatAccounts(mapped);
+      })
+      .catch(() => setSoftHatAccounts([]));
 
     if (window.ethereum) {
       const handleAccountsChanged = (accounts) => {
@@ -212,11 +227,11 @@ function App() {
           walletMode={walletMode}
         />
         {loading && <Loader />}
-        <CraftHatModal
-          open={craftHatOpen}
-          onClose={() => setCraftHatOpen(false)}
-          accounts={craftHatAccounts}
-          onConnect={connectCraftHat}
+        <SoftHatModal
+          open={softHatOpen}
+          onClose={() => setSoftHatOpen(false)}
+          accounts={softHatAccounts}
+          onConnect={connectSoftHat}
           loading={loading}
           walletStatus={walletStatus}
           activeAddress={account}
@@ -232,7 +247,7 @@ function App() {
                   <div className="unauthorized-message">
                     <h2>Unauthorized Access</h2>
                     <p>Your account does not have any assigned role in the system.</p>
-                    <p>Use MetaMask or CraftHat with another localnet account to continue.</p>
+                    <p>Use MetaMask or SoftHat with another localnet account to continue.</p>
                   </div>
                 )}
               </main>

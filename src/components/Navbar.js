@@ -46,7 +46,7 @@ const Navbar = ({ account, onConnectWallet, isAdmin, userRole, logoutUser, walle
         {account ? (
           <>
             <span className="position-info">{getPositionTitle(userRole, account)}</span>
-            <span className="wallet-chip">{walletMode === 'crafthat' ? 'CraftHat' : 'MetaMask'}</span>
+            <span className="wallet-chip">{walletMode === 'softhat' ? 'SoftHat' : 'MetaMask'}</span>
             <button className="btn logout-btn" onClick={logoutUser}>Logout</button>
             {userRole > 1 && (
               <button className="btn field-btn" onClick={handleSubordinateClick}>Field Ops</button>
