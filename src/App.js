@@ -81,6 +81,7 @@ function App() {
   const [softHatOpen, setSoftHatOpen] = useState(false);
   const [softHatAccounts, setSoftHatAccounts] = useState([]);
   const [walletStatus, setWalletStatus] = useState('');
+  const [walletChooserOpen, setWalletChooserOpen] = useState(false);
 
 
   const buildRouteHint = (index) => {
