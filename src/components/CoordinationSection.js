@@ -1,5 +1,6 @@
 // src/components/CoordinationSection.js
 import React, { useState, useEffect } from 'react';
+import { sendBatchWithNonceControl } from '../utils/txBatch';
 
 const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) => {
   const [recipientGroup, setRecipientGroup] = useState("4"); // Default: Intelligence Command
@@ -7,10 +8,11 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
   const [intel, setIntel] = useState("");
   const [output, setOutput] = useState("");
   const [userBranch, setUserBranch] = useState("1"); // Default branch for this user
-  const [broadcastMode, setBroadcastMode] = useState(false); // Send to all admins
-  const [directMode, setDirectMode] = useState(false); // Send to a specific admin
+  const [broadcastMode, setBroadcastMode] = useState(false); // Whether to send to all admins
+  const [directMode, setDirectMode] = useState(false); // Whether to send to a specific admin
   const [selectedAdminIndex, setSelectedAdminIndex] = useState(0);
 
+  // Detect user's branch
   useEffect(() => {
     if (account) {
       const lastChar = account.slice(-1);
@@ -20,7 +22,12 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
     }
   }, [account]);
 
-  const ROLES = { NONE: 0, STRATEGIC: 1, OPERATIONAL: 2, TACTICAL: 3 };
+  const ROLES = {
+    NONE: 0,
+    STRATEGIC: 1,
+    OPERATIONAL: 2,
+    TACTICAL: 3,
+  };
 
   const getBranchName = (branchId) => {
     switch (parseInt(branchId)) {
@@ -59,44 +66,56 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
       alert("Enter intelligence data and ensure you are connected.");
       return;
     }
+    
     try {
       setOutput("Preparing to send intelligence...");
       const metadataPrefix = `[Branch: ${userBranch}, Group: ${recipientGroup}] `;
       const fullMessage = metadataPrefix + intel;
 
+      // Determine which function to call explicitly by signature
       if (broadcastMode) {
         if (!adminAddresses || adminAddresses.length === 0) {
           setOutput("No admin addresses available for broadcasting.");
           return;
         }
-        setOutput(`Broadcasting intelligence to ${adminAddresses.length} admins...`);
-        // Call the new direct method for each admin
-        const txPromises = adminAddresses.map(async (adminAddr) => {
-          return await contracts.coordinationContract.syncIntelligence(adminAddr, fullMessage);
+        
+        setOutput(`Broadcasting intelligence to ${adminAddresses.length} recipients with nonce control...`);
+        const signer = contracts?.coordinationContract?.signer;
+        const calls = adminAddresses.map((addr) => (overrides) =>
+          contracts.coordinationContract["syncIntelligence(address,string)"](addr, fullMessage, overrides)
+        );
+
+        const batch = await sendBatchWithNonceControl({
+          signer,
+          makeTxCalls: calls,
+          onProgress: ({ stage, index, nonce, hash, blockNumber }) => {
+            console.log('[MDCN][Coordination][Broadcast]', { stage, index, nonce, hash, blockNumber, to: adminAddresses[index] });
+          },
         });
-        const txs = await Promise.all(txPromises);
-        const txHashes = txs.map(tx => tx.hash).join("\n");
+
+        const txHashes = batch.txs.map(tx => tx.hash).join("\n");
         setOutput(prev => `${prev}\nBroadcast initiated. Transaction hashes:\n${txHashes}`);
-        await Promise.all(txs.map(tx => tx.wait()));
-        setOutput(prev => `${prev}\nIntelligence successfully broadcast to all admins.`);
-      }
-      else if (directMode) {
+        setOutput(prev => `${prev}\nIntelligence successfully broadcast to all recipients.`);
+      } else if (directMode) {
         if (!adminAddresses || adminAddresses.length === 0 || selectedAdminIndex >= adminAddresses.length) {
           setOutput("Selected admin address is not available.");
           return;
         }
+        
         const adminAddress = adminAddresses[selectedAdminIndex];
         setOutput(`Sending intelligence directly to Admin ${selectedAdminIndex + 1} (${adminAddress.substring(0,6)}...${adminAddress.substring(adminAddress.length - 4)})...`);
-        const tx = await contracts.coordinationContract.syncIntelligence(adminAddress, fullMessage);
+        
+        const tx = await contracts.coordinationContract["syncIntelligence(address,string)"](adminAddress, fullMessage);
+        console.log('[MDCN][Coordination][Direct]', { to: adminAddress, hash: tx.hash, mode: 'direct-admin' });
         setOutput(prev => `${prev}\nTransaction sent: ${tx.hash}`);
         await tx.wait();
         setOutput(prev => `${prev}\nIntelligence sent successfully to admin.`);
-      }
-      else {
-        // Group mode: call the legacy function
+      } else {
+        // Group/Branch method using explicit signature:
         const _recipientGroup = parseInt(recipientGroup);
         const _branch = parseInt(branch);
         const tx = await contracts.coordinationContract.syncIntelligenceLegacy(_recipientGroup, _branch, fullMessage);
+        console.log('[MDCN][Coordination][Group]', { recipientGroup: _recipientGroup, branch: _branch, hash: tx.hash });
         setOutput(`Transaction sent: ${tx.hash}`);
         await tx.wait();
         setOutput(prev => prev + "\nIntelligence synced successfully.");
@@ -105,6 +124,9 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
       console.error("Error syncing intelligence:", error);
       const errorMessage = error.reason || error.message || "Unknown error occurred";
       setOutput(`Error: ${errorMessage}`);
+      if (error.stack) {
+        console.error("Error stack:", error.stack);
+      }
     }
   };
 
@@ -112,14 +134,8 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
     <section className="card">
       <h2>Interoperability & Coordination</h2>
       <p><strong>Your Branch:</strong> {getBranchName(userBranch)}</p>
-      <p>
-        <strong>Your Role:</strong>{" "}
-        {userRole === ROLES.STRATEGIC
-          ? "Strategic Command"
-          : userRole === ROLES.OPERATIONAL
-          ? "Operational Command"
-          : "Tactical Unit"}
-      </p>
+      <p><strong>Your Role:</strong> {userRole === ROLES.STRATEGIC ? "Strategic Command" : userRole === ROLES.OPERATIONAL ? "Operational Command" : "Tactical Unit"}</p>
+      
       <div className="form-control">
         <label>Intelligence Mode:</label>
         <div className="radio-group">
@@ -128,7 +144,7 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
               type="radio"
               value="group"
               checked={!broadcastMode && !directMode}
-              onChange={() => handleModeChange("group")}
+              onChange={() => handleModeChange('group')}
             />
             Group Method (to recipient group)
           </label>
@@ -139,7 +155,7 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
                   type="radio"
                   value="broadcast"
                   checked={broadcastMode}
-                  onChange={() => handleModeChange("broadcast")}
+                  onChange={() => handleModeChange('broadcast')}
                 />
                 Broadcast (to all admins)
               </label>
@@ -148,7 +164,7 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
                   type="radio"
                   value="direct"
                   checked={directMode}
-                  onChange={() => handleModeChange("direct")}
+                  onChange={() => handleModeChange('direct')}
                 />
                 Direct (to specific admin)
               </label>
@@ -156,12 +172,13 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
           )}
         </div>
       </div>
+      
       {directMode && adminAddresses && adminAddresses.length > 0 && (
         <div className="form-control">
           <label>Select Admin:</label>
           <select
             value={selectedAdminIndex}
-            onChange={(e) => setSelectedAdminIndex(parseInt(e.target.value))}
+            onChange={e => setSelectedAdminIndex(parseInt(e.target.value))}
           >
             {adminAddresses.map((addr, index) => (
               <option key={index} value={index}>
@@ -171,11 +188,12 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
           </select>
         </div>
       )}
+      
       {(!broadcastMode && !directMode) && (
         <>
           <div className="form-control">
             <label>Select Recipient Group:</label>
-            <select value={recipientGroup} onChange={(e) => setRecipientGroup(e.target.value)}>
+            <select value={recipientGroup} onChange={e => setRecipientGroup(e.target.value)}>
               <option value="1">Command Center</option>
               <option value="2">Tactical Command</option>
               <option value="3">Coordination Command</option>
@@ -184,7 +202,7 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
           </div>
           <div className="form-control">
             <label>Select Branch:</label>
-            <select value={branch} onChange={(e) => setBranch(e.target.value)}>
+            <select value={branch} onChange={e => setBranch(e.target.value)}>
               <option value="1">Army</option>
               <option value="2">Navy</option>
               <option value="3">Air Force</option>
@@ -192,42 +210,32 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
           </div>
         </>
       )}
+      
       <div className="form-control">
         <label>Intelligence Data:</label>
         <textarea
           rows="4"
           value={intel}
-          onChange={(e) => setIntel(e.target.value)}
+          onChange={e => setIntel(e.target.value)}
           placeholder="Enter intelligence data..."
           className="intel-textarea"
         />
       </div>
+      
       <button className="btn" onClick={syncIntelligence}>
-        {broadcastMode
-          ? "Broadcast Intelligence"
-          : directMode
-          ? "Send Direct Intelligence"
-          : "Sync Intelligence"}
+        {broadcastMode ? 'Broadcast Intelligence' : directMode ? 'Send Direct Intelligence' : 'Sync Intelligence'}
       </button>
+      
       <div className="intel-summary">
         {broadcastMode ? (
-          <p>
-            This intelligence will be sent to <strong>all Strategic
-            Command admins</strong>.
-          </p>
+          <p>This intelligence will be sent to <strong>all Strategic Command admins</strong>.</p>
         ) : directMode ? (
-          <p>
-            This intelligence will be sent directly to{" "}
-            <strong>Admin {selectedAdminIndex + 1}</strong>.
-          </p>
+          <p>This intelligence will be sent directly to <strong>Admin {selectedAdminIndex + 1}</strong>.</p>
         ) : (
-          <p>
-            This intelligence will be sent to{" "}
-            <strong>{getRecipientGroupName(recipientGroup)}</strong> in the{" "}
-            <strong>{getBranchName(branch)}</strong> branch.
-          </p>
+          <p>This intelligence will be sent to <strong>{getRecipientGroupName(recipientGroup)}</strong> in the <strong>{getBranchName(branch)}</strong> branch.</p>
         )}
       </div>
+      
       <pre className="output">{output}</pre>
     </section>
   );

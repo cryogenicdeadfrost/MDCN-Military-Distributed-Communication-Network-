@@ -12,7 +12,8 @@
         "react-dom": "^18.2.0",
         "react-router-dom": "^6.8.1",
         "react-scripts": "5.0.1",
-        "web-vitals": "^2.1.4"
+        "web-vitals": "^2.1.4",
+        "sass": "^1.77.8"
     },
     "scripts": {
         "start": "react-scripts start",
@@ -25,7 +26,8 @@
         "hardhat:deploy": "hardhat run --network localhost scripts/deploy.js",
         "hardhat:update": "hardhat update-app-config",
         "hardhat:kill": "node scripts/kill-port.js 8545",
-        "hardhat:accounts": "hardhat accounts"
+        "hardhat:accounts": "hardhat accounts",
+        "simulate:hierarchy": "hardhat run --network localhost scripts/push-all-hierarchy.js"
     },
     "eslintConfig": {
         "extends": [

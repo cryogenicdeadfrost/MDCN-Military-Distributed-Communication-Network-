@@ -4,14 +4,14 @@
 // ================  VARIABLES  =====================
 // =================================================
 
-$font-stack: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-$primary-color: #4b9ee6;       
-$primary-hover: #3988cd;
+$font-stack: 'Inter', 'Avenir Next', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+$primary-color: #6f5a4a;       
+$primary-hover: #5b4638;
 $strategic-color: #ff66c4;
 $operational-color: #4CAF50;
 $tactical-color: #ff9800;
-$secondary-color: #2e3b4e;
-$secondary-dark: #1f2a38;
+$secondary-color: #3f3a36;
+$secondary-dark: #2b2521;
 
 // Additional accent colors
 $light-red: #ffcdd2;
@@ -20,8 +20,8 @@ $light-yellow: #fff9c4;
 
 // Neutrals
 $text-color: #333;
-$bg-gradient-start: #f0f4f8;
-$bg-gradient-end: #d9e2ec;
+$bg-gradient-start: #efe9e2;
+$bg-gradient-end: #2a2421;
 $component-bg: #ffffff;
 $tactical-card-bg: #fffaf2; // Slightly off-white with a warm hue
 $inbox-card-bg: #eef5ff;    // Light bluish tint
@@ -47,7 +47,7 @@ $radius-card: 10px;
 }
 
 @mixin animated-gradient {
-  background: linear-gradient(135deg, $bg-gradient-start, $bg-gradient-end);
+  background: linear-gradient(135deg, #f5f3f1 0%, #ede8e3 6%, #e4ddd6 12%, #d8cec5 18%, #cabeb3 24%, #b9aa9d 30%, #a89384 36%, #977c6b 42%, #866655 48%, #765140 54%, #654233 60%, #57372b 66%, #4a3026 72%, #402a22 78%, #38251f 84%, #31211c 90%, #2a1d19 96%, #231815 100%);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
 }
@@ -870,3 +870,132 @@ main {
 
 // =================================================
 // ==========  END OF STYLES  =======================
+
+.wallet-chip {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.softhat-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.softhat-modal {
+  width: min(900px, 95vw);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.softhat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.softhat-note {
+  margin-bottom: 12px;
+}
+
+.softhat-account-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.softhat-account-row {
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.softhat-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.softhat-meta {
+  color: #2e3b4e;
+  font-size: 0.85rem;
+}
+
+
+.shade-strip {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  gap: 2px;
+  margin: 12px 0;
+}
+
+.shade-strip span { height: 6px; }
+
+
+.layer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.layer-card {
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 10px;
+}
+
+.layer-title {
+  margin: 4px 8px 10px;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.layer-strategic { border-left: 4px solid #866655; }
+.layer-operational { border-left: 4px solid #654233; }
+.layer-tactical { border-left: 4px solid #4a3026; }
+.layer-inbox { border-left: 4px solid #977c6b; }
+
+.wallet-hub-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wallet-hub-modal {
+  width: min(520px, 92vw);
+  padding: 22px;
+  background: #f3efeb;
+  border-radius: 12px;
+  border: 1px solid #7a6658;
+}
+
+.wallet-hub-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.btn-secondary {
+  background: #6a5a4e;
+}

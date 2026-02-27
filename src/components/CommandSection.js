@@ -1,5 +1,6 @@
 // src/components/CoordinationSection.js
 import React, { useState, useEffect } from 'react';
+import { sendBatchWithNonceControl } from '../utils/txBatch';
 
 const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) => {
   const [recipientGroup, setRecipientGroup] = useState("4"); // Default: Intelligence Command
@@ -78,16 +79,23 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
           return;
         }
         
-        setOutput(`Broadcasting intelligence to ${adminAddresses.length} admins...`);
-        const txPromises = adminAddresses.map(async (addr) => {
-          return await contracts.coordinationContract["syncIntelligence(address,string)"](addr, fullMessage);
+        setOutput(`Broadcasting intelligence to ${adminAddresses.length} recipients with nonce control...`);
+        const signer = contracts?.coordinationContract?.signer;
+        const calls = adminAddresses.map((addr) => (overrides) =>
+          contracts.coordinationContract["syncIntelligence(address,string)"](addr, fullMessage, overrides)
+        );
+
+        const batch = await sendBatchWithNonceControl({
+          signer,
+          makeTxCalls: calls,
+          onProgress: ({ stage, index, nonce, hash, blockNumber }) => {
+            console.log('[MDCN][Coordination][Broadcast]', { stage, index, nonce, hash, blockNumber, to: adminAddresses[index] });
+          },
         });
 
-        const txs = await Promise.all(txPromises);
-        const txHashes = txs.map(tx => tx.hash).join("\n");
+        const txHashes = batch.txs.map(tx => tx.hash).join("\n");
         setOutput(prev => `${prev}\nBroadcast initiated. Transaction hashes:\n${txHashes}`);
-        await Promise.all(txs.map(tx => tx.wait()));
-        setOutput(prev => `${prev}\nIntelligence successfully broadcast to all admins.`);
+        setOutput(prev => `${prev}\nIntelligence successfully broadcast to all recipients.`);
       } else if (directMode) {
         if (!adminAddresses || adminAddresses.length === 0 || selectedAdminIndex >= adminAddresses.length) {
           setOutput("Selected admin address is not available.");
@@ -98,6 +106,7 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
         setOutput(`Sending intelligence directly to Admin ${selectedAdminIndex + 1} (${adminAddress.substring(0,6)}...${adminAddress.substring(adminAddress.length - 4)})...`);
         
         const tx = await contracts.coordinationContract["syncIntelligence(address,string)"](adminAddress, fullMessage);
+        console.log('[MDCN][Coordination][Direct]', { to: adminAddress, hash: tx.hash, mode: 'direct-admin' });
         setOutput(prev => `${prev}\nTransaction sent: ${tx.hash}`);
         await tx.wait();
         setOutput(prev => `${prev}\nIntelligence sent successfully to admin.`);
@@ -105,11 +114,8 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
         // Group/Branch method using explicit signature:
         const _recipientGroup = parseInt(recipientGroup);
         const _branch = parseInt(branch);
-        const tx = await contracts.coordinationContract["syncIntelligence(uint8,uint8,string)"](
-          _recipientGroup, 
-          _branch, 
-          fullMessage
-        );
+        const tx = await contracts.coordinationContract.syncIntelligenceLegacy(_recipientGroup, _branch, fullMessage);
+        console.log('[MDCN][Coordination][Group]', { recipientGroup: _recipientGroup, branch: _branch, hash: tx.hash });
         setOutput(`Transaction sent: ${tx.hash}`);
         await tx.wait();
         setOutput(prev => prev + "\nIntelligence synced successfully.");
