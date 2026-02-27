@@ -160,14 +160,17 @@ function App() {
   };
 
   const openWalletHub = () => {
-    if (window.ethereum) {
-      const useMetaMask = window.confirm('Use MetaMask? Click Cancel for SoftHat local wallet.');
-      if (useMetaMask) {
-        connectMetaMask();
-        return;
-      }
-    }
+    setWalletChooserOpen(true);
+  };
+
+  const chooseSoftHat = () => {
+    setWalletChooserOpen(false);
     setSoftHatOpen(true);
+  };
+
+  const chooseMetaMask = () => {
+    setWalletChooserOpen(false);
+    connectMetaMask();
   };
 
   const logoutUser = () => {
@@ -203,16 +206,32 @@ function App() {
   }, [walletMode]);
 
   const renderRoleBasedSections = () => (
-    <>
-      {isAdmin && <CommandSection contracts={contracts} account={account} userRole={userRole} />}
+    <div className="layer-grid">
+      {isAdmin && (
+        <div className="layer-card layer-strategic">
+          <h3 className="layer-title">Strategic Layer - Command</h3>
+          <CommandSection contracts={contracts} account={account} userRole={userRole} />
+        </div>
+      )}
       {(isAdmin || isOperational) && (
-        <CoordinationSection contracts={contracts} account={account} userRole={userRole} adminAddresses={adminAddresses} />
+        <div className="layer-card layer-operational">
+          <h3 className="layer-title">Operational Layer - Coordination</h3>
+          <CoordinationSection contracts={contracts} account={account} userRole={userRole} adminAddresses={adminAddresses} />
+        </div>
       )}
       {(isTactical || isOperational) && !isAdmin && (
-        <TacticalSection contracts={contracts} account={account} userRole={userRole} adminAddresses={adminAddresses} />
+        <div className="layer-card layer-tactical">
+          <h3 className="layer-title">Tactical Layer - Field Ops</h3>
+          <TacticalSection contracts={contracts} account={account} userRole={userRole} adminAddresses={adminAddresses} />
+        </div>
       )}
-      {userRole > ROLES.NONE && <Inbox contract={contracts.commandContract} account={account} isAdmin={isAdmin} userRole={userRole} />}
-    </>
+      {userRole > ROLES.NONE && (
+        <div className="layer-card layer-inbox">
+          <h3 className="layer-title">Command Inbox Layer</h3>
+          <Inbox contract={contracts.commandContract} account={account} isAdmin={isAdmin} userRole={userRole} />
+        </div>
+      )}
+    </div>
   );
 
   return (
@@ -227,6 +246,18 @@ function App() {
           walletMode={walletMode}
         />
         {loading && <Loader />}
+        {walletChooserOpen && (
+          <div className="wallet-hub-overlay" onClick={() => setWalletChooserOpen(false)}>
+            <div className="wallet-hub-modal" onClick={(e) => e.stopPropagation()}>
+              <h3>Choose Wallet</h3>
+              <p>SoftHat is the primary local wallet. MetaMask is optional.</p>
+              <div className="wallet-hub-actions">
+                <button className="btn" onClick={chooseSoftHat}>Connect SoftHat</button>
+                <button className="btn btn-secondary" onClick={chooseMetaMask} disabled={!window.ethereum}>Connect MetaMask</button>
+              </div>
+            </div>
+          </div>
+        )}
         <SoftHatModal
           open={softHatOpen}
           onClose={() => setSoftHatOpen(false)}

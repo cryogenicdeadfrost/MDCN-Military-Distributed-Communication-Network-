@@ -75,7 +75,7 @@ Main React app files live under `src/`.
 
 ## Wallet modes
 
-This app currently supports two ways to connect a signer:
+This app supports two explicit wallet choices shown at connect time:
 
 ### 1) MetaMask mode
 
@@ -86,7 +86,7 @@ Use your browser extension wallet connected to local Hardhat network.
 SoftHat is a local helper flow intended for localhost development:
 
 - You can import a private key manually.
-- You can quickly pick accounts from `public/softhat-accounts.json`.
+- You can quickly pick from 20 default Hardhat-derived accounts in `public/softhat-accounts.json`.
 - You can copy fake token labels and private keys from the popup.
 - You can switch identities fast by logout then reconnect.
 
@@ -138,7 +138,7 @@ npx hardhat run scripts/deploy.js --network localhost
 npm start
 ```
 
-At this point you can connect either with MetaMask or SoftHat.
+At this point the wallet chooser opens with dedicated buttons for SoftHat (primary) and MetaMask.
 
 ## Setup and run (scripted dev flow)
 
