@@ -26,8 +26,7 @@
         "hardhat:deploy": "hardhat run --network localhost scripts/deploy.js",
         "hardhat:update": "hardhat update-app-config",
         "hardhat:kill": "node scripts/kill-port.js 8545",
-        "hardhat:accounts": "hardhat accounts",
-        "simulate:hierarchy": "hardhat run --network localhost scripts/push-all-hierarchy.js"
+        "hardhat:accounts": "hardhat accounts"
     },
     "eslintConfig": {
         "extends": [

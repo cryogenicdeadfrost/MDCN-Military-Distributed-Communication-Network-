@@ -114,7 +114,11 @@ const CoordinationSection = ({ contracts, account, userRole, adminAddresses }) =
         // Group/Branch method using explicit signature:
         const _recipientGroup = parseInt(recipientGroup);
         const _branch = parseInt(branch);
-        const tx = await contracts.coordinationContract.syncIntelligenceLegacy(_recipientGroup, _branch, fullMessage);
+        const tx = await contracts.coordinationContract["syncIntelligence(uint8,uint8,string)"](
+          _recipientGroup, 
+          _branch, 
+          fullMessage
+        );
         console.log('[MDCN][Coordination][Group]', { recipientGroup: _recipientGroup, branch: _branch, hash: tx.hash });
         setOutput(`Transaction sent: ${tx.hash}`);
         await tx.wait();

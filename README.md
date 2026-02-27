@@ -166,7 +166,6 @@ This script attempts to:
 - `npm run hardhat:deploy` - deploy contracts to localhost
 - `npm run hardhat:update` - update app config from generated network config
 - `npm run hardhat:accounts` - print configured accounts
-- `npm run simulate:hierarchy` - auto-push messages across layers/groups/branches with nonce-safe sequencing
 
 ## Local account and config files
 
