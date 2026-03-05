@@ -39,6 +39,21 @@ const SoftHatModal = ({
     }
   };
 
+  const handleUseAccount = (item) => {
+    const enteredKey = window.prompt(
+      `Secure Login: Enter the private key for Account #${item.index} (${item.roleProfile.role} - ${item.branch.name})\n\nHint: Use the 'Copy Key' button first.`
+    );
+
+    // If user clicked Cancel
+    if (enteredKey === null) return;
+
+    if (enteredKey.trim() === item.privateKey) {
+      onConnect(item.privateKey);
+    } else {
+      alert("Authentication Failed: The provided private key is incorrect.");
+    }
+  };
+
   return (
     <div className="softhat-overlay" onClick={onClose}>
       <div className="softhat-modal" onClick={(e) => e.stopPropagation()}>
@@ -79,7 +94,7 @@ const SoftHatModal = ({
               <div className="softhat-actions">
                 <button className="btn btn-small" onClick={() => copyText(item.privateKey)}>Copy Key</button>
                 <button className="btn btn-small" onClick={() => copyText(item.token || `SOFT-${item.index ?? 0}`)}>Copy Token</button>
-                <button className="btn btn-small" disabled={loading} onClick={() => onConnect(item.privateKey)}>Use</button>
+                <button className="btn btn-small" disabled={loading} onClick={() => handleUseAccount(item)}>Use</button>
               </div>
             </div>
           ))}

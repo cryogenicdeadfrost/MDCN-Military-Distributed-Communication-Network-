@@ -1,7 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+interface IMDCNCommand {
+    enum Role { None, Strategic, Operational, Tactical }
+    enum Branch { None, Army, Navy, AirForce }
+    function roles(address) external view returns (Role);
+    function branches(address) external view returns (Branch);
+}
+
 contract MDCNTactical {
+    IMDCNCommand public commandContract;
+
+    constructor(address _commandContractAddress) {
+        commandContract = IMDCNCommand(_commandContractAddress);
+    }
     struct FieldMessage {
         uint256 id;
         address sender;
@@ -91,6 +103,18 @@ contract MDCNTactical {
 
     // Unchanged: Log field data for a specific recipient
     function logFieldData(address _recipient, string memory _data) public {
+        IMDCNCommand.Role senderRole = commandContract.roles(msg.sender);
+        IMDCNCommand.Role recipientRole = commandContract.roles(_recipient);
+        IMDCNCommand.Branch senderBranch = commandContract.branches(msg.sender);
+        IMDCNCommand.Branch recipientBranch = commandContract.branches(_recipient);
+
+        require(senderRole == IMDCNCommand.Role.Tactical, "Protocol Breach: Only Tactical units can log Field Data");
+        require(
+            (recipientRole == IMDCNCommand.Role.Strategic || recipientRole == IMDCNCommand.Role.Operational) && 
+            senderBranch == recipientBranch,
+            "Protocol Breach: Tactical units can only log Field Data UPWARDS to their OWN branch"
+        );
+
         fieldCount++;
         fieldData[fieldCount] = FieldMessage({
             id: fieldCount,
@@ -177,6 +201,18 @@ contract MDCNTactical {
         uint256 _assetId,
         string memory _status
     ) public {
+        IMDCNCommand.Role senderRole = commandContract.roles(msg.sender);
+        IMDCNCommand.Role recipientRole = commandContract.roles(_recipient);
+        IMDCNCommand.Branch senderBranch = commandContract.branches(msg.sender);
+        IMDCNCommand.Branch recipientBranch = commandContract.branches(_recipient);
+
+        require(senderRole == IMDCNCommand.Role.Tactical, "Protocol Breach: Only Tactical units can update Maintenance");
+        require(
+            (recipientRole == IMDCNCommand.Role.Strategic || recipientRole == IMDCNCommand.Role.Operational) && 
+            senderBranch == recipientBranch,
+            "Protocol Breach: Tactical units can only send Maintenance UPWARDS to their OWN branch"
+        );
+
         maintenanceCount++;
         maintenanceData[maintenanceCount] = MaintenanceMessage({
             id: maintenanceCount,

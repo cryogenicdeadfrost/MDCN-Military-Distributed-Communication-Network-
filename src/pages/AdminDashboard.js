@@ -16,6 +16,16 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
   const [responseText, setResponseText] = useState("");
   const [adminBranch, setAdminBranch] = useState("1"); // Default: Army
 
+  // Determine active theme based on branch
+  const getThemeClass = (branchId) => {
+    switch (parseInt(branchId)) {
+      case 1: return "theme-army";
+      case 2: return "theme-navy";
+      case 3: return "theme-airforce";
+      default: return "";
+    }
+  };
+
   // Map admin addresses to branches and inbox titles
   const adminBranches = {
     "1": "Army",
@@ -149,7 +159,7 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
           acknowledgedTimestamp: acknowledgmentInfo.timestamp || null
         };
       }));
-      const sortedCommands = processedCommands.sort((a, b) => 
+      const sortedCommands = processedCommands.sort((a, b) =>
         parseInt(b.timestamp) - parseInt(a.timestamp)
       );
       setCommands(sortedCommands);
@@ -297,7 +307,7 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
       ]);
       setLoading(false);
     };
-    
+
     if (contract && account && isAdmin) {
       loadData();
       try {
@@ -314,7 +324,7 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
             fetchCommands();
           });
         }
-        
+
         // Coordination contract events
         if (contractAddresses.coordination) {
           const signer = getRuntimeSigner();
@@ -339,7 +349,7 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
             fetchIntelligence();
           });
         }
-        
+
         // Tactical contract events
         if (contractAddresses.tactical) {
           const signer = getRuntimeSigner();
@@ -364,7 +374,7 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
             fetchFieldData();
           });
         }
-        
+
         // Cleanup event listeners on unmount
         return () => {
           if (contract) {
@@ -554,7 +564,17 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
       }
     } catch (error) {
       console.error("Error sending response:", error);
-      alert(`Error sending response: ${error.message}`);
+      let errorMessage = error.reason || error.message || "Unknown error";
+
+      if (errorMessage.includes("Protocol Breach:")) {
+        const breachMatch = errorMessage.match(/Protocol Breach: ([^"]+)/);
+        if (breachMatch) {
+          alert(`BLOCKED: Protocol Breach\n\n${breachMatch[1]}`);
+          return;
+        }
+      }
+
+      alert(`Error sending response: ${errorMessage}`);
     }
   };
 
@@ -588,18 +608,26 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
                     <td>{data.group ? getRecipientGroupNameFinal(data.group) : 'N/A'}</td>
                     <td>{data.message}</td>
                     <td>{formatDate(data.timestamp)}</td>
-                    <td>{data.acknowledged ? 'Acknowledged' : 'Pending'}</td>
+                    <td>
+                      {data.acknowledged ? (
+                        <>
+                          Acknowledged
+                          <br />
+                          <span className="immutable-tag">Immutable</span>
+                        </>
+                      ) : 'Pending'}
+                    </td>
                     <td>
                       {!data.acknowledged && (
-                        <button 
-                          className="btn btn-small" 
+                        <button
+                          className="btn btn-small"
                           onClick={() => acknowledgeFieldData(data.id)}
                         >
                           Acknowledge
                         </button>
                       )}
-                      <button 
-                        className="btn btn-small response-btn" 
+                      <button
+                        className="btn btn-small response-btn"
                         onClick={() => startResponding('field', data)}
                         style={{ marginLeft: '5px' }}
                       >
@@ -621,13 +649,13 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
                             className="response-textarea"
                           ></textarea>
                           <div className="response-buttons">
-                            <button 
+                            <button
                               className="btn btn-small cancel-btn"
                               onClick={cancelResponse}
                             >
                               Cancel
                             </button>
-                            <button 
+                            <button
                               className="btn btn-small submit-btn"
                               onClick={sendResponse}
                             >
@@ -679,18 +707,26 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
                     <td>{intel.group ? getRecipientGroupNameFinal(intel.group) : 'N/A'}</td>
                     <td>{intel.message}</td>
                     <td>{formatDate(intel.timestamp)}</td>
-                    <td>{intel.acknowledged ? 'Acknowledged' : 'Pending'}</td>
+                    <td>
+                      {intel.acknowledged ? (
+                        <>
+                          Acknowledged
+                          <br />
+                          <span className="immutable-tag">Immutable</span>
+                        </>
+                      ) : 'Pending'}
+                    </td>
                     <td>
                       {!intel.acknowledged && (
-                        <button 
-                          className="btn btn-small" 
+                        <button
+                          className="btn btn-small"
                           onClick={() => acknowledgeIntelligence(intel.id)}
                         >
                           Acknowledge
                         </button>
                       )}
-                      <button 
-                        className="btn btn-small response-btn" 
+                      <button
+                        className="btn btn-small response-btn"
                         onClick={() => startResponding('intel', intel)}
                         style={{ marginLeft: '5px' }}
                       >
@@ -712,13 +748,13 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
                             className="response-textarea"
                           ></textarea>
                           <div className="response-buttons">
-                            <button 
+                            <button
                               className="btn btn-small cancel-btn"
                               onClick={cancelResponse}
                             >
                               Cancel
                             </button>
-                            <button 
+                            <button
                               className="btn btn-small submit-btn"
                               onClick={sendResponse}
                             >
@@ -742,10 +778,10 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
 
   // Main render block with tab navigation and inbox integration
   return (
-    <div className="admin-dashboard">
+    <div className={`admin-dashboard ${getThemeClass(adminBranch)}`}>
       <h2>Strategic Command Dashboard</h2>
       <p>Welcome, Commander {account.substring(0, 6)}...{account.substring(account.length - 4)}</p>
-      
+
       <div className="admin-contracts-info">
         <h3>Command Information</h3>
         <p><strong>Your Branch Assignment:</strong> {getBranchNameFinal(adminBranch)}</p>
@@ -756,28 +792,28 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
           <p><strong>Tactical Contract:</strong> {contractAddresses.tactical}</p>
         </div>
       </div>
-      
+
       <div className="admin-nav form-control">
-        <button 
-          className={`btn ${selectedTab === 'commands' ? 'active-btn' : ''}`} 
+        <button
+          className={`btn ${selectedTab === 'commands' ? 'active-btn' : ''}`}
           onClick={() => setSelectedTab('commands')}
         >
           Command Tracking
         </button>
-        <button 
-          className={`btn ${selectedTab === 'intelligence' ? 'active-btn' : ''}`} 
+        <button
+          className={`btn ${selectedTab === 'intelligence' ? 'active-btn' : ''}`}
           onClick={() => setSelectedTab('intelligence')}
         >
           Intelligence Reports
         </button>
-        <button 
-          className={`btn ${selectedTab === 'field-data' ? 'active-btn' : ''}`} 
+        <button
+          className={`btn ${selectedTab === 'field-data' ? 'active-btn' : ''}`}
           onClick={() => setSelectedTab('field-data')}
         >
           Field Data
         </button>
-        <button 
-          className={`btn ${selectedTab === 'inbox' ? 'active-btn' : ''}`} 
+        <button
+          className={`btn ${selectedTab === 'inbox' ? 'active-btn' : ''}`}
           onClick={() => setSelectedTab('inbox')}
         >
           Inbox
@@ -822,7 +858,11 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
                         {cmd.executed ? (
                           <span className="status-executed">Executed</span>
                         ) : cmd.acknowledged ? (
-                          <span className="status-acknowledged">Acknowledged</span>
+                          <>
+                            <span className="status-acknowledged">Acknowledged</span>
+                            <br />
+                            <span className="immutable-tag">Immutable</span>
+                          </>
                         ) : (
                           <span className="status-pending">Pending</span>
                         )}
@@ -831,7 +871,7 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
                       <td>{formatDate(cmd.acknowledgedTimestamp)}</td>
                       <td>
                         {!cmd.executed && (
-                          <button 
+                          <button
                             className="btn btn-small execute-btn"
                             onClick={() => executeCommand(cmd.id)}
                           >
@@ -849,7 +889,7 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
                             {commandResponses[cmd.id].map((response, index) => (
                               <div key={index} className="response-item">
                                 <p>
-                                  <strong>From:</strong> {response.senderPosition} | 
+                                  <strong>From:</strong> {response.senderPosition} |
                                   {response.branch && <span><strong> Branch:</strong> {getBranchNameFinal(response.branch)} | </span>}
                                   {response.group && <span><strong> Group:</strong> {getRecipientGroupNameFinal(response.group)} | </span>}
                                   <strong> Time:</strong> {formatDate(response.timestamp)}
@@ -857,13 +897,13 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
                                 <p className="response-message">{response.message}</p>
                                 {!response.acknowledged && (
                                   <div className="response-actions">
-                                    <button 
+                                    <button
                                       className="btn btn-small"
                                       onClick={() => acknowledgeIntelligence(response.id)}
                                     >
                                       Acknowledge
                                     </button>
-                                    <button 
+                                    <button
                                       className="btn btn-small response-btn"
                                       onClick={() => startResponding('intel', response)}
                                       style={{ marginLeft: '5px' }}
@@ -891,9 +931,9 @@ const AdminDashboard = ({ contract, contracts, account, isAdmin, contractAddress
         <div>
           <div className="admin-nav form-control">
             {Object.entries(inboxTitles).map(([key, title]) => (
-              <button 
-                key={key} 
-                className={`btn ${selectedInbox === key ? 'active-btn' : ''}`} 
+              <button
+                key={key}
+                className={`btn ${selectedInbox === key ? 'active-btn' : ''}`}
                 onClick={() => setSelectedInbox(key)}
               >
                 {title}

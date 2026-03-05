@@ -20,6 +20,8 @@
         "build": "react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
+        "start:all": "npx concurrently \"npm run dev\" \"npm start\"",
+        "demo": "npx hardhat run --network localhost scripts/demo-seed.js",
         "dev": "node scripts/hardhat-setup.js",
         "hardhat:node": "hardhat node",
         "hardhat:config": "hardhat generate-config --limit 10",
