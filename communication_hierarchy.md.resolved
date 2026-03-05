@@ -1,0 +1,114 @@
+# MDCN Communication Hierarchy & Account Map
+
+This document outlines the hierarchical communication structures, message visibility rules, and the active SoftHat accounts (IDs and Keys) available for the Military Distributed Communication Network (MDCN).
+
+## 1. Network Architecture & Communication Flow
+
+The MDCN utilizes a 3-layer architecture governed by Solidity smart contracts.
+
+```mermaid
+graph TD
+    %% Strategic Layer
+    subgraph Strategic Layer [Strategic Command - Tier 1]
+        A[Army Command]
+        N[Navy Command]
+        AF[Air Force Command]
+    end
+
+    %% Operational Layer
+    subgraph Operational Layer [Operational Command - Tier 2]
+        OA[Army Ops]
+        ON[Navy Ops]
+        OAF[Air Force Ops]
+    end
+
+    %% Tactical Layer
+    subgraph Tactical Layer [Tactical Units - Tier 3]
+        TA1[Army Field Unit 1]
+        TA2[Army Field Unit 2]
+        TN[Navy Field Unit]
+        TAF[Air Force Field Unit]
+    end
+
+    %% Communication Flows (Top-Down Commands)
+    %% Army
+    A -->|Commands| OA
+    A -->|Commands| TA1
+    A -->|Commands| TA2
+    OA -->|Commands| TA1
+    OA -->|Commands| TA2
+    
+    %% Navy
+    N -->|Commands| ON
+    N -->|Commands| TN
+    ON -->|Commands| TN
+    
+    %% Air Force
+    AF -->|Commands| OAF
+    AF -->|Commands| TAF
+    OAF -->|Commands| TAF
+    
+    %% Field Data & Maintenance (Bottom-Up Reporting)
+    TA1 -.->|Field Data| OA
+    TA1 -.->|Field Data| A
+    TN -.->|Field Data| ON
+    TN -.->|Field Data| N
+    TAF -.->|Field Data| OAF
+    TAF -.->|Field Data| AF
+    
+    %% Intelligence Sync (Lateral & Vertical)
+    A <==>|Intelligence| OA
+    OA <==>|Intelligence| TA1
+    N <==>|Intelligence| ON
+    ON <==>|Intelligence| TN
+    AF <==>|Intelligence| OAF
+    OAF <==>|Intelligence| TAF
+    
+    classDef strategic fill:#bbdefb,stroke:#1565C0,stroke-width:2px;
+    classDef operational fill:#c8e6c9,stroke:#2E7D32,stroke-width:2px;
+    classDef tactical fill:#ffcdd2,stroke:#B71C1C,stroke-width:2px;
+```
+
+### 1.1 Who Can Send to Whom?
+- **Commands ([MDCNCommand.sol](file:///a:/MDCN-Military-Distributed-Communication-Network/Contracts/MDCNCommand.sol)):** Top-down only. 
+  - Strategic (Layer 1) can send to Operational (Layer 2) and Tactical (Layer 3).
+  - Operational (Layer 2) can send to Tactical (Layer 3).
+  - Tactical (Layer 3) **cannot** send commands.
+- **Field Data & Maintenance ([MDCNTactical.sol](file:///a:/MDCN-Military-Distributed-Communication-Network/Contracts/MDCNTactical.sol)):** Bottom-up reporting.
+  - Tactical (Layer 3) logs field events and maintenance statuses to Operational or Strategic recipients.
+- **Intelligence ([MDCNCoordination.sol](file:///a:/MDCN-Military-Distributed-Communication-Network/Contracts/MDCNCoordination.sol)):** Lateral and Vertical.
+  - Any node can sync intelligence with any other node across the network (e.g., Tactical to Strategic, Strategic to Strategic, Army to Navy).
+
+### 1.2 Who Can View Which Messages?
+- **Recipients:** A node can only view messages where they are the explicit `recipient` address or if the message was broadcasted to their [RecipientGroup](file:///a:/MDCN-Military-Distributed-Communication-Network/src/components/CommandSection.js#30-36) and [Branch](file:///a:/MDCN-Military-Distributed-Communication-Network/src/components/CommandSection.js#29-30).
+- **Sender:** A node can always view the history of messages they have dispatched.
+- **Immutability:** Once a message is sent and stored on the blockchain, it is immutable. Acknowledging a message triggers a secondary blockchain transaction that marks the initial message as `Acknowledged` (`🔒 Immutable`).
+
+---
+
+## 2. Active SoftHat Accounts, Keys, & IDs
+
+Below is the refined list of the 10 functional local accounts used for testing the MDCN network. 
+*Note: To simulate a more realistic environment, clicking "Use" in the SoftHat Hub now requires you to paste the corresponding Private Key.*
+
+### Strategic Layer (Tier 1) - Administrators
+| ID (Index) | Branch | Address | Private Key |
+| :--- | :--- | :--- | :--- |
+| **0** | Army | `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266` | `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` |
+| **1** | Navy | `0x70997970C51812dc3A010C7d01b50e0d17dc79C8` | `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d` |
+| **2** | Air Force | `0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC` | `0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a` |
+
+### Operational Layer (Tier 2) - Coordination
+| ID (Index) | Branch | Address | Private Key |
+| :--- | :--- | :--- | :--- |
+| **3** | Army | `0x90F79bf6EB2c4f870365E785982E1f101E93b906` | `0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6` |
+| **4** | Navy | `0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65` | `0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a` |
+| **5** | Air Force | `0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc` | `0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba` |
+
+### Tactical Layer (Tier 3) - Field Ops
+| ID (Index) | Branch | Address | Private Key |
+| :--- | :--- | :--- | :--- |
+| **11** | Air Force | `0x71bE63f3384f5fb98995898A86B02Fb2426c5788` | `0x701b615bbdfb9de65240bc28bd21bbc0d996645a3dd57e7b12bc2bdf6f192c82` |
+| **12** | Army | `0xFABB0ac9d68B0B445fB7357272Ff202C5651694a` | `0xa267530f49f8280200edf313ee7af6b827f2a8bce2897751d06a843f644967b1` |
+| **13** | Navy | `0x1CBd3b2770909D4e10f157cABC84C7264073C9Ec` | `0x47c99abed3324a2707c28affff1267e45918ec8c3f20b8aa892e8b065d2942dd` |
+| **18** | Army | `0xdD2FD4581271e230360230F9337D5c0430Bf44C0` | `0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0` |

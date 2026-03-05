@@ -40,6 +40,8 @@ contract MDCNCommand {
     mapping(uint256 => Command) public commands;
     // Mapping from address to Role.
     mapping(address => Role) public roles;
+    // Mapping from address to Branch.
+    mapping(address => Branch) public branches;
 
     event CommandSent(
         uint256 indexed id,
@@ -60,23 +62,26 @@ contract MDCNCommand {
     constructor() {
         // The deployer is assigned as Strategic (the Admin role)
         roles[msg.sender] = Role.Strategic;
+        branches[msg.sender] = Branch.Army; // Default branch for deployer
         emit RoleAssigned(msg.sender, Role.Strategic);
     }
 
-    // Allow an admin to assign roles to others.
-    function assignRole(address _account, Role _role) public {
+    // Allow an admin to assign roles and branches to others.
+    function assignRoleAndBranch(address _account, Role _role, Branch _branch) public {
         require(
             roles[msg.sender] == Role.Strategic,
             "Only Strategic (admin) can assign roles"
         );
         roles[_account] = _role;
+        branches[_account] = _branch;
         emit RoleAssigned(_account, _role);
     }
 
-    // Convenience function for the frontend
-    function setRole(address _account, uint8 _roleId) public {
+    // Convenience function for the frontend/deployer
+    function setRoleAndBranch(address _account, uint8 _roleId, uint8 _branchId) public {
         Role role = Role(_roleId);
-        assignRole(_account, role);
+        Branch branch = Branch(_branchId);
+        assignRoleAndBranch(_account, role, branch);
     }
 
     // Send a command by specifying the command layer, recipient group, branch, and message.

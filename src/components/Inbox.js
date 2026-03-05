@@ -104,17 +104,27 @@ const Inbox = ({ contract, account, isAdmin, adminFilterRecipientGroup }) => {
         <p>No commands found.</p>
       ) : (
         <ul>
-          {commands.map(cmd => (
-            <li key={cmd.id} style={{ marginBottom: '15px' }}>
-              <strong>Command #{cmd.id}</strong><br />
-              <em>From: {cmd.sender}</em><br />
-              <span>{cmd.text}</span><br />
-              <small>{cmd.timestamp}</small><br />
-              <button onClick={() => acknowledge(cmd.id)} className="btn">
-                Acknowledge
-              </button>
-            </li>
-          ))}
+          {commands.map(cmd => {
+            let itemBorderClass = "layer-inbox";
+            if (cmd.branch === "Army") itemBorderClass = "theme-army";
+            else if (cmd.branch === "Navy") itemBorderClass = "theme-navy";
+            else if (cmd.branch === "AirForce" || cmd.branch === "Air Force") itemBorderClass = "theme-airforce";
+
+            return (
+              <li key={cmd.id} className={`inbox-item ${itemBorderClass}`} style={{ marginBottom: '15px', padding: '15px', border: '1px solid #ddd', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <strong>Command #{cmd.id}</strong>
+                  <span className="immutable-tag" style={{ margin: 0 }}>Immutable</span>
+                </div>
+                <em>From: {cmd.sender}</em><br />
+                <div style={{ padding: '10px 0' }}>{cmd.text}</div>
+                <small style={{ color: '#666' }}>{cmd.timestamp}</small><br />
+                <button onClick={() => acknowledge(cmd.id)} className="btn" style={{ marginTop: '10px' }}>
+                  Acknowledge
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

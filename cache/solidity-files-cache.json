@@ -105,6 +105,113 @@
       "artifacts": [
         "MDCNTactical"
       ]
+    },
+    "A:\\MDCN-Military-Distributed-Communication-Network\\Contracts\\MDCNCommand.sol": {
+      "lastModificationDate": 1772658543088,
+      "contentHash": "d67e5e88e16f7c33280dbeaed6060fb6",
+      "sourceName": "Contracts/MDCNCommand.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "MDCNCommand"
+      ]
+    },
+    "A:\\MDCN-Military-Distributed-Communication-Network\\Contracts\\MDCNCoordination.sol": {
+      "lastModificationDate": 1772658650472,
+      "contentHash": "4bc9a29c21d159f7699061967f4d0f35",
+      "sourceName": "Contracts/MDCNCoordination.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "IMDCNCommand",
+        "MDCNCoordination"
+      ]
+    },
+    "A:\\MDCN-Military-Distributed-Communication-Network\\Contracts\\MDCNTactical.sol": {
+      "lastModificationDate": 1772658652659,
+      "contentHash": "36dbcd2361383771effdb2d4c706cbe6",
+      "sourceName": "Contracts/MDCNTactical.sol",
+      "solcConfig": {
+        "version": "0.8.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "IMDCNCommand",
+        "MDCNTactical"
+      ]
     }
   }
 }

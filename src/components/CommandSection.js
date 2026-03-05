@@ -86,7 +86,17 @@ const CommandSection = ({ contracts, account, userRole, adminAddresses }) => {
       }
     } catch (error) {
       console.error('Error sending command:', error);
-      setOutput(`Error: ${error.reason || error.message || 'Unknown error occurred'}`);
+      let errMsg = error.reason || error.message || 'Unknown error occurred';
+
+      // Extract custom solidity errors
+      if (errMsg.includes("Protocol Breach:")) {
+        const breachMatch = errMsg.match(/Protocol Breach: ([^"]+)/);
+        if (breachMatch) {
+          errMsg = `BLOCKED: Protocol Breach\n\n${breachMatch[1]}`;
+          alert(errMsg);
+        }
+      }
+      setOutput(`Error: ${errMsg}`);
     }
   };
 

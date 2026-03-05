@@ -21,6 +21,16 @@ const SubordinateDashboard = ({ contracts, account, userRole, adminAddresses }) 
   const [messageSending, setMessageSending] = useState(false);
   const [userBranch, setUserBranch] = useState('1'); // Default: Army
 
+  // Determine active theme based on branch
+  const getThemeClass = (branchId) => {
+    switch (parseInt(branchId)) {
+      case 1: return "theme-army";
+      case 2: return "theme-navy";
+      case 3: return "theme-airforce";
+      default: return "";
+    }
+  };
+
   // Role definitions matching the contract
   const ROLES = {
     NONE: 0,
@@ -428,7 +438,16 @@ const SubordinateDashboard = ({ contracts, account, userRole, adminAddresses }) 
       alert("Response sent successfully to admin!");
     } catch (error) {
       console.error("Error sending response:", error);
-      const errorMessage = error.message || "Unknown error";
+      let errorMessage = error.reason || error.message || "Unknown error";
+
+      if (errorMessage.includes("Protocol Breach:")) {
+        const breachMatch = errorMessage.match(/Protocol Breach: ([^"]+)/);
+        if (breachMatch) {
+          alert(`BLOCKED: Protocol Breach\n\n${breachMatch[1]}`);
+          return;
+        }
+      }
+
       if (errorMessage.includes("user denied")) {
         alert("Transaction was rejected in your wallet.");
       } else if (errorMessage.includes("insufficient funds")) {
@@ -481,7 +500,17 @@ const SubordinateDashboard = ({ contracts, account, userRole, adminAddresses }) 
     } catch (error) {
       console.error("Error sending message:", error);
       setMessageSending(false);
-      alert(`Error: ${error.message}`);
+      let errorMessage = error.reason || error.message || "Unknown error";
+
+      if (errorMessage.includes("Protocol Breach:")) {
+        const breachMatch = errorMessage.match(/Protocol Breach: ([^"]+)/);
+        if (breachMatch) {
+          alert(`BLOCKED: Protocol Breach\n\n${breachMatch[1]}`);
+          return;
+        }
+      }
+
+      alert(`Error: ${errorMessage}`);
     }
   };
 
@@ -618,7 +647,7 @@ const SubordinateDashboard = ({ contracts, account, userRole, adminAddresses }) 
   }, [contracts, account]);
 
   return (
-    <div className="subordinate-dashboard">
+    <div className={`subordinate-dashboard ${getThemeClass(userBranch)}`}>
       <div className="dashboard-header">
         <h1>Field Operations Dashboard</h1>
         <div className="user-info">
@@ -706,7 +735,15 @@ const SubordinateDashboard = ({ contracts, account, userRole, adminAddresses }) 
                             <td>{getBranchName(cmd.branch)}</td>
                             <td>{cmd.commandText}</td>
                             <td>{formatDate(cmd.timestamp)}</td>
-                            <td>{cmd.acknowledged ? "Acknowledged" : "Pending"}</td>
+                            <td>
+                              {cmd.acknowledged ? (
+                                <>
+                                  Acknowledged
+                                  <br />
+                                  <span className="immutable-tag">Immutable</span>
+                                </>
+                              ) : "Pending"}
+                            </td>
                             <td>
                               {!cmd.acknowledged && (
                                 <button
@@ -791,7 +828,15 @@ const SubordinateDashboard = ({ contracts, account, userRole, adminAddresses }) 
                           <td>{intel.group ? getRecipientGroupName(intel.group) : 'N/A'}</td>
                           <td>{intel.message}</td>
                           <td>{formatDate(intel.timestamp)}</td>
-                          <td>{intel.acknowledged ? "Acknowledged" : "Pending"}</td>
+                          <td>
+                            {intel.acknowledged ? (
+                              <>
+                                Acknowledged
+                                <br />
+                                <span className="immutable-tag">Immutable</span>
+                              </>
+                            ) : "Pending"}
+                          </td>
                           <td>
                             {!intel.acknowledged && (
                               <button
@@ -838,7 +883,15 @@ const SubordinateDashboard = ({ contracts, account, userRole, adminAddresses }) 
                           <td>{data.group ? getRecipientGroupName(data.group) : "N/A"}</td>
                           <td>{data.message}</td>
                           <td>{formatDate(data.timestamp)}</td>
-                          <td>{data.acknowledged ? "Acknowledged" : "Pending"}</td>
+                          <td>
+                            {data.acknowledged ? (
+                              <>
+                                Acknowledged
+                                <br />
+                                <span className="immutable-tag">Immutable</span>
+                              </>
+                            ) : "Pending"}
+                          </td>
                           <td>
                             {!data.acknowledged && (
                               <button
@@ -883,7 +936,13 @@ const SubordinateDashboard = ({ contracts, account, userRole, adminAddresses }) 
                           <td>{item.status}</td>
                           <td>{formatDate(item.timestamp)}</td>
                           <td>
-                            {!item.acknowledged && (
+                            {item.acknowledged ? (
+                              <>
+                                Acknowledged
+                                <br />
+                                <span className="immutable-tag">Immutable</span>
+                              </>
+                            ) : (
                               <button
                                 className="btn btn-small"
                                 onClick={() => acknowledgeMaintenance(item.id)}
