@@ -4,6 +4,24 @@ This project is a local, role-based communication simulation built on Solidity s
 
 If you want the short version: people with the right role send commands, other people acknowledge them, everyone pretends to be very serious, and the blockchain keeps receipts.
 
+## 🚀 Quickstart & Demo
+
+**1. Launch Everything at Once**
+Open a terminal in the project directory and run:
+```bash
+npm run start:all
+```
+*This command automatically starts the local Hardhat node, deploys the Strict Access security model smart contracts, assigns the 10-account hierarchy mapping, and immediately boots the React frontend at `http://localhost:3000`.*
+
+**2. Seed the Blockchain (The Demo)**
+To instantly populate the UI with realistic lateral and vertical communications, open a **second terminal** window and run:
+```bash
+npm run demo
+```
+*This executes a backend script that mimics Strategic, Operational, and Tactical branches sending secure, protocol-compliant commands and intelligence data backwards and forwards across the web3 networks, testing the immutability rules.*
+
+---
+
 ## What this project does
 
 MDCN provides three communication layers backed by separate contracts:
