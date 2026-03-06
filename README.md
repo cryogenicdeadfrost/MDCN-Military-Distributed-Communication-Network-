@@ -4,7 +4,7 @@ This project is a local, role-based communication simulation built on Solidity s
 
 If you want the short version: people with the right role send commands, other people acknowledge them, everyone pretends to be very serious, and the blockchain keeps receipts.
 
-## 🚀 Quickstart & Demo
+###Quickstart & Demo
 
 **1. Launch Everything at Once**
 Open a terminal in the project directory and run:
